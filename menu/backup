@@ -1,77 +1,122 @@
 #!/bin/bash
-# ==========================================
-# Getting
-clear
+AUTO_MODE=0
+[[ "$1" == "auto" ]] && AUTO_MODE=1
+
+[[ "$AUTO_MODE" -eq 0 ]] && clear
 IP=$(curl -sS ipv4.icanhazip.com)
-domain=$(cat /etc/xray/domain)
-date=$(date +"%Y-%m-%d")
-clear
-email=$(cat /root/email)
-if [[ "$email" = "" ]]; then
-clear
-echo "Masukkan Email Untuk Menerima Backup"
-echo -e ""
-echo -e "\033[1;93m_____________________________________________________\033[0m" | tee -a /etc/user-create/user.log
-read -rp "Input Your Email : " -e email
-echo -e "\033[1;93m_____________________________________________________\033[0m" | tee -a /etc/user-create/user.log
-cat <<EOF>>/root/email
-$email
-EOF
+domain=$(cat /etc/xray/domain 2>/dev/null)
+date=$(date +"%Y-%m-%d_%H-%M")
+
+if ! rclone listremotes 2>/dev/null | grep -q "^dr:"; then
+    if [[ "$AUTO_MODE" -eq 0 ]]; then
+        echo -e "*━━━ SETUP GOOGLE DRIVE BACKUP ━━━*"
+        echo -e "Remote rclone (dr:) belum terkonfigurasi di VPS ini."
+        echo -e "Tempel Token JSON hasil rclone authorize drive (atau Enter untuk lewati):"
+        echo -e ""
+        read -rp "Token JSON : " RCLONE_TOKEN
+        if [[ -n "$RCLONE_TOKEN" ]]; then
+            mkdir -p /root/.config/rclone
+            cat > /root/.config/rclone/rclone.conf <<EOL
+[dr]
+type = drive
+scope = drive
+token = ${RCLONE_TOKEN}
+EOL
+            chmod 600 /root/.config/rclone/rclone.conf
+        fi
+    fi
 fi
-clear
-echo -e "\033[1;93m_____________________________________________________\033[0m" | tee -a /etc/user-create/user.log
-echo -e "\033[1;92mWait Backup Procces.......\033[0m"
-echo -e "\033[1;93m_____________________________________________________\033[0m" | tee -a /etc/user-create/user.log
+
+email=$(cat /root/email 2>/dev/null)
+if [[ -z "$email" && "$AUTO_MODE" -eq 0 ]]; then
+    echo -e ""
+    read -rp "Masukkan Email Penerima Backup : " -e email
+    if [[ -n "$email" ]]; then
+        echo "$email" > /root/email
+        cp -f /root/email /home/email 2>/dev/null
+    fi
+fi
+
+if [[ "$AUTO_MODE" -eq 0 ]] && ! grep -q "^# BEGIN_Backup" /etc/crontab 2>/dev/null; then
+    echo -e ""
+    read -rp "Aktifkan Auto-Backup otomatis setiap hari jam 00:05? [y/n] : " auto_ans
+    if [[ "$auto_ans" =~ ^[Yy]$ ]]; then
+        cat << EOF >> /etc/crontab
+# BEGIN_Backup
+5 0 * * * root /usr/local/sbin/backup auto
+# END_Backup
+EOF
+        systemctl restart cron 2>/dev/null || service cron restart 2>/dev/null
+        echo -e "Auto-Backup harian (00:05) berhasil diaktifkan!"
+        sleep 1
+    fi
+fi
+
+[[ "$AUTO_MODE" -eq 0 ]] && clear && echo -e "*━━━ IDLVPN BACKUP PROCESS ━━━*" && echo -e "Mengumpulkan data & memproses arsip..."
+
 rm -rf /root/backup
-mkdir /root/backup
-cp /etc/passwd backup/
-cp /etc/group backup/
-cp /etc/shadow backup/
-cp /etc/gshadow backup/
-cp /etc/crontab backup/
-cp -r /var/lib/kyt/ backup/kyt 
-cp -r /etc/xray backup/xray
-cp -r /var/www/html/ backup/html
+mkdir -p /root/backup
+cp /etc/passwd /root/backup/
+cp /etc/group /root/backup/
+cp /etc/shadow /root/backup/
+cp /etc/gshadow /root/backup/
+cp /etc/crontab /root/backup/ 2>/dev/null
+[ -d /var/lib/kyt ] && cp -r /var/lib/kyt /root/backup/kyt
+[ -d /etc/xray ] && cp -r /etc/xray /root/backup/xray
+[ -d /var/www/html ] && cp -r /var/www/html /root/backup/html
+rm -f /root/backup/html/backup-*.zip
+
+FILE_NAME="backup-${IP}-${date}.zip"
 cd /root
-zip -r $IP-$date.zip backup > /dev/null 2>&1
-rclone copy /root/$IP-$date.zip dr:backup/
-url=$(rclone link dr:backup/$IP-$date.zip)
-id=(`echo $url | grep '^https' | cut -d'=' -f2`)
-link="https://drive.google.com/u/4/uc?id=${id}&export=download"
-echo -e "
-Detail Backup 
-==================================
-IP VPS        : $IP
-Link Backup   : $link
-Tanggal       : $date
-==================================
-" | mail -s "Backup Data" $email
+zip -r "/root/${FILE_NAME}" backup > /dev/null 2>&1
 rm -rf /root/backup
-rm -r /root/$IP-$date.zip
-clear
-URL="$URL"
-TEXT="
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>   ⚠️BACKUP NOTIF⚠️</b>
-<b>     Detail Backup VPS</b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>IP VPS  :</b> <code>${IP} </code>
-<b>DOMAIN :</b> <code>${domain}</code>
-<b>Tanggal : $date</b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>Link Backup   :</b> $link
-<code>◇━━━━━━━━━━━━━━◇</code>
-<code>Silahkan copy Link dan restore di VPS baru</code>
-"
-echo ""
-clear
-echo -e "
-Detail Backup 
+
+link=""
+if rclone listremotes 2>/dev/null | grep -q "^dr:"; then
+    rclone copy "/root/${FILE_NAME}" dr:backup/ >/dev/null 2>&1
+    url=$(rclone link "dr:backup/${FILE_NAME}" 2>/dev/null)
+    id=$(echo "$url" | grep "^https" | cut -d"=" -f2)
+    [[ -n "$id" ]] && link="https://drive.google.com/u/4/uc?id=${id}&export=download"
+fi
+
+if [[ -z "$link" ]]; then
+    mkdir -p /var/www/html
+    cp -f "/root/${FILE_NAME}" "/var/www/html/${FILE_NAME}"
+    link="https://${domain}:81/${FILE_NAME}"
+fi
+
+MAIL_STATUS="Tidak aktif (Email kosong)"
+if [[ -n "$email" ]]; then
+    if command -v mail >/dev/null 2>&1; then
+        echo -e "Detail Backup IDLVPN
 ==================================
-IP VPS        : $IP
-Link Backup   : $link
-Tanggal       : $date
+IP VPS      : $IP
+Domain      : $domain
+Link Backup : $link
+Tanggal     : $date
 ==================================
-"
-echo "Silahkan copy Link dan restore di VPS baru"
-echo ""
+Silakan salin Link di atas untuk Restore di VPS baru." | mail -s "Backup Data VPS ($domain)" "$email" 2>/dev/null
+        MAIL_STATUS="Dikirim ke $email"
+    else
+        MAIL_STATUS="Paket mail/msmtp belum terpasang"
+    fi
+fi
+
+rm -f "/root/${FILE_NAME}"
+
+if [[ "$AUTO_MODE" -eq 0 ]]; then
+    clear
+    echo -e "*━━━ IDLVPN BACKUP SELESAI ━━━*"
+    echo -e ""
+    echo -e "*IP VPS :* \`${IP}\`"
+    echo -e "*Domain :* \`${domain}\`"
+    echo -e "*Tanggal :* ${date}"
+    echo -e "*Notifikasi Email :* ${MAIL_STATUS}"
+    echo -e "*Link Backup :*"
+    echo -e "\`${link}\`"
+    echo -e ""
+    echo -e "_Salin link di atas untuk Restore di VPS baru._"
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to back on menu"
+    menu-backup
+fi

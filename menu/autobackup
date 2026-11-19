@@ -1,78 +1,70 @@
 #!/bin/bash
-# ==========================================
-# Color
-RED='\033[0;31m'
-NC='\033[0m'
-GREEN='\033[0;32m'
-ORANGE='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-LIGHT='\033[0;37m'
-# ==========================================
-# Getting
-MYIP=$(wget -qO- icanhazip.com);
 clear
-IP=$(wget -qO- ipinfo.io/ip);
-date=$(date +"%Y-%m-%d");
-Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
-Info="${Green_font_prefix}[ON]${Font_color_suffix}"
-Error="${Red_font_prefix}[OFF]${Font_color_suffix}"
-cek=$(grep -c -E "^# BEGIN_Backup" /etc/crontab)
-if [[ "$cek" = "1" ]]; then
-sts="${Info}"
+IP=$(curl -sS ipv4.icanhazip.com)
+date=$(date +"%Y-%m-%d")
+
+cek=$(grep -c -E "^# BEGIN_Backup" /etc/crontab 2>/dev/null)
+if [[ "$cek" -ge 1 ]]; then
+    sts="[32m[ON][0m"
 else
-sts="${Error}"
+    sts="[31m[OFF][0m"
 fi
+
+EMAIL_NOW=$(cat /root/email 2>/dev/null)
+[[ -z "$EMAIL_NOW" ]] && EMAIL_NOW="(Belum diatur)"
+
 function start() {
-email=$(cat /home/email)
-if [[ "$email" = "" ]]; then
-echo "Please enter your email"
-read -rp "Email : " -e email
-cat <<EOF>>/home/email
-$email
-EOF
-fi
-cat << EOF >> /etc/crontab
+    email=$(cat /root/email 2>/dev/null)
+    if [[ -z "$email" ]]; then
+        echo -e ""
+        read -rp "Masukkan Email Penerima Backup : " -e email
+        echo "$email" > /root/email
+        cp -f /root/email /home/email 2>/dev/null
+    fi
+    sed -i "/^# BEGIN_Backup/,/^# END_Backup/d" /etc/crontab
+    cat << EOF >> /etc/crontab
 # BEGIN_Backup
-5 0 * * * root backup
+5 0 * * * root /usr/local/sbin/backup auto
 # END_Backup
 EOF
-service cron restart
-sleep 1
-echo " Please Wait"
-clear
-echo " Autobackup Has Been Started"
-echo " Data Will Be Backed Up Automatically at 00:05 GMT +7"
-exit 0
+    systemctl restart cron 2>/dev/null || service cron restart 2>/dev/null
+    clear
+    echo -e "*━━━ AUTOBACKUP AKTIF ━━━*"
+    echo -e "• Jadwal  : Setiap hari pukul 00:05"
+    echo -e "• Tujuan  : $(cat /root/email)"
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to back on menu"
+    autobackup
 }
+
 function stop() {
-email=$(cat /home/email)
-sed -i "/^$email/d" /home/email
-sed -i "/^# BEGIN_Backup/,/^# END_Backup/d" /etc/crontab
-service cron restart
-sleep 1
-echo " Please Wait"
-clear
-echo " Autobackup Has Been Stopped"
-exit 0
+    sed -i "/^# BEGIN_Backup/,/^# END_Backup/d" /etc/crontab
+    systemctl restart cron 2>/dev/null || service cron restart 2>/dev/null
+    clear
+    echo -e "*━━━ AUTOBACKUP DIMATIKAN ━━━*"
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to back on menu"
+    autobackup
 }
 
 function gantipenerima() {
-rm -rf /home/email
-echo "Please enter your email"
-read -rp "Email : " -e email
-cat <<EOF>>/home/email
-$email
-EOF
+    echo -e ""
+    read -rp "Masukkan Email Penerima Baru : " -e email
+    if [[ -n "$email" ]]; then
+        echo "$email" > /root/email
+        cp -f /root/email /home/email 2>/dev/null
+        echo -e "Email penerima berhasil diperbarui ke: $email"
+    fi
+    sleep 1
+    autobackup
 }
+
 function gantipengirim() {
-echo "Please enter your email"
-read -rp "Email : " -e email
-echo "Please enter your Password email"
-read -rp "Password : " -e pwdd
-rm -rf /etc/msmtprc
-cat<<EOF>>/etc/msmtprc
+    echo -e ""
+    echo -e "Masukkan Akun Gmail Pengirim & App Password (16 karakter):"
+    read -rp "Email Pengirim (Gmail) : " -e email
+    read -rp "App Password           : " -e pwdd
+    cat > /etc/msmtprc <<EOF
 defaults
 tls on
 tls_starttls on
@@ -86,47 +78,46 @@ from $email
 password $pwdd
 logfile ~/.msmtp.log
 EOF
+    chmod 600 /etc/msmtprc
+    echo -e "Konfigurasi SMTP pengirim berhasil disimpan."
+    sleep 1
+    autobackup
 }
+
 function testemail() {
-email=$(cat /home/email)
-if [[ "$email" = "" ]]; then
-start
-fi
-email=$(cat /home/email)
-echo -e "
-Ini adalah isi email percobaaan kirim email dari vps
-IP VPS : $IP
-Tanggal : $date
-" | mail -s "Percobaan Pengiriman Email" $email
+    email=$(cat /root/email 2>/dev/null)
+    if [[ -z "$email" ]]; then
+        echo -e "Email penerima belum diatur!"
+        sleep 1
+        autobackup
+        return
+    fi
+    echo -e "Percobaan pengiriman email backup dari VPS IDLVPN
+IP VPS  : $IP
+Tanggal : $date" | mail -s "Test Email Backup IDLVPN" "$email"
+    echo -e "Email percobaan telah dikirim ke $email. Cek kotak masuk / folder Spam."
+    sleep 2
+    autobackup
 }
-clear
-echo -e "=============================="
-echo -e "     Autobackup Data $sts     "
-echo -e "=============================="
-echo -e "1. Start Autobackup"
-echo -e "2. Stop Autobackup"
-echo -e "3. Ganti Email Penerima"
-echo -e "4. Ganti Email Pengirim"
-echo -e "5. Test kirim Email"
-echo -e "=============================="
-read -rp "Please Enter The Correct Number : " -e num
+
+echo -e "*━━━ IDLVPN AUTOBACKUP DATA ━━━*"
+echo -e "• Status         : $sts"
+echo -e "• Email Penerima : $EMAIL_NOW"
+echo -e ""
+echo -e "  [1] Aktifkan Autobackup (00:05 Harian)"
+echo -e "  [2] Matikan Autobackup"
+echo -e "  [3] Ganti Email Penerima"
+echo -e "  [4] Atur Email Pengirim (SMTP Gmail)"
+echo -e "  [5] Test Kirim Email"
+echo -e "  [0] Kembali"
+echo -e ""
+read -rp "Pilih menu [1-5/0] : " num
 case $num in
-1)
-start
-;;
-2)
-stop
-;;
-3)
-gantipenerima
-;;
-4)
-gantipengirim
-;;
-5)
-testemail
-;;
-*)
-clear
-;;
+    1) start ;;
+    2) stop ;;
+    3) gantipenerima ;;
+    4) gantipengirim ;;
+    5) testemail ;;
+    0) menu-backup ;;
+    *) autobackup ;;
 esac
