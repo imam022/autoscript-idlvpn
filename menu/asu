@@ -32,8 +32,8 @@ echo ""
 
 echo -e "${Cyan} BEFORE QUOTA ${Xark} "
 echo -e ""  
-echo -e "${GreenBe} Quota      : $((current_quota / 1024 / 1024 / 1024)) ${Xark} "
-echo -e "${GreenBe} Username   : $user ${Xark} "
+echo -e "${GreenBe} Quota : $((current_quota / 1024 / 1024 / 1024)) ${Xark} "
+echo -e "${GreenBe} Username : $user ${Xark} "
 echo -e ""
 
 echo ""
@@ -53,8 +53,8 @@ echo -e "${GreenBe} Succesfully ${Xark} "
 echo ""
 echo -e "${Cyan} AFTER ${Xark} "
 echo ""
-      echo -e "${yellow} New Quota   : $new_quota GB ${Xark} "
-      echo -e "${yellow} Username    : $user ${Xark}"
+      echo -e "${yellow} New Quota : $new_quota GB ${Xark} "
+      echo -e "${yellow} Username : $user ${Xark}"
 echo ""
 
 

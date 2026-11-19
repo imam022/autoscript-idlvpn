@@ -1,4 +1,5 @@
 #!/bin/bash
+MYIP=$(curl -sS4 ifconfig.me)
 DF='\e[39m'
 Bold='\e[1m'
 Blink='\e[5m'
@@ -63,9 +64,9 @@ SSH WS TLS    = 443
 SSH WS NTLS   = 80, 8080, 8880, 2082
 BadVPN UDP    = 7100,7200,7300</code>
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
-Ovpn Download : https://$domain:81/
+Ovpn Download : http://${MYIP}:81/
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
-Save Link Account: https://$domain:81/ssh-$Login.txt
+Save Link Account: http://${MYIP}:81/ssh-$Login.txt
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
 Berakhir Pada  : $pup Menit
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
@@ -106,21 +107,21 @@ BadVPN UDP       : 7100, 7300, 7300
 ===========================
 Payload WSS: GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf] 
 ===========================
-OVPN Download : https://$domain:81/
+OVPN Download : http://${MYIP}:81/
 ===========================
 
 END
 echo userdel -f "$Login" | at now + $pup minutes
 echo "tunnel ssh ${Login}" | at now +$pup minutes &> /dev/null
 clear
-echo -e "*━━━ IDLVPN TRIAL SSH & OVPN ━━━*"
+echo -e "━━━ IDLVPN TRIAL SSH & OVPN ━━━"
 echo -e ""
-echo -e "*Username :* \`$Login\`"
-echo -e "*Password :* \`$Pass\`"
-echo -e "*Host :* \`$domain\`"
-echo -e "*IP VPS :* \`$IP\`"
+echo -e "Username : $Login"
+echo -e "Password : $Pass"
+echo -e "Host : $domain"
+echo -e "IP VPS : $IP"
 echo -e ""
-echo -e "*━━━ PORTS & SERVICES ━━━*"
+echo -e "━━━ PORTS & SERVICES ━━━"
 echo -e "• OpenSSH : 22"
 echo -e "• Dropbear : 109, 143"
 echo -e "• SSH WS : 80, 8080, 8880, 2082"
@@ -129,15 +130,15 @@ echo -e "• SSH UDP : 1-65535 | SSL/TLS : 400-900"
 echo -e "• OVPN WS : 80 (SSL: 443)"
 echo -e "• BadVPN UDPG : 7100, 7200, 7300"
 echo -e ""
-echo -e "*━━━ CONFIG & PAYLOAD ━━━*"
-echo -e "*Format HC :* \`$domain:80@$Login:$Pass\`"
-echo -e "*Payload WS :*"
-echo -e "\`GET / HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: ws[crlf][crlf]\`"
-echo -e "*OVPN Config :* https://$domain:81/"
-echo -e "*Link Akun :* https://$domain:81/ssh-$Login.txt"
+echo -e "━━━ CONFIG & PAYLOAD ━━━"
+echo -e "Format HC : $domain:80@$Login:$Pass"
+echo -e "Payload WS :"
+echo -e "GET / HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: ws[crlf][crlf]"
+echo -e "OVPN Config : http://${MYIP}:81/"
+echo -e "Link Akun : http://${MYIP}:81/ssh-$Login.txt"
 echo -e ""
-echo -e "*Masa Aktif :* $pup Menit"
-echo -e "_Powered by IDLVPN Infrastructure_"
+echo -e "Masa Aktif : $pup Menit"
+echo -e "Powered by IDLVPN Infrastructure"
 echo -e ""
 read -n 1 -s -r -p "Press any key to back on menu"
 menu

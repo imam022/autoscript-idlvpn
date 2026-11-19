@@ -1,4 +1,5 @@
 #!/bin/bash
+MYIP=$(curl -sS4 ifconfig.me)
 AUTO_MODE=0
 [[ "$1" == "auto" ]] && AUTO_MODE=1
 
@@ -9,7 +10,7 @@ date=$(date +"%Y-%m-%d_%H-%M")
 
 if ! rclone listremotes 2>/dev/null | grep -q "^dr:"; then
     if [[ "$AUTO_MODE" -eq 0 ]]; then
-        echo -e "*━━━ SETUP GOOGLE DRIVE BACKUP ━━━*"
+        echo -e "━━━ SETUP GOOGLE DRIVE BACKUP ━━━"
         echo -e "Remote rclone (dr:) belum terkonfigurasi di VPS ini."
         echo -e "Tempel Token JSON hasil rclone authorize drive (atau Enter untuk lewati):"
         echo -e ""
@@ -81,7 +82,7 @@ fi
 if [[ -z "$link" ]]; then
     mkdir -p /var/www/html
     cp -f "/root/${FILE_NAME}" "/var/www/html/${FILE_NAME}"
-    link="https://${domain}:81/${FILE_NAME}"
+    link="http://${MYIP}:81/${FILE_NAME}"
 fi
 
 MAIL_STATUS="Tidak aktif (Email kosong)"
@@ -105,16 +106,16 @@ rm -f "/root/${FILE_NAME}"
 
 if [[ "$AUTO_MODE" -eq 0 ]]; then
     clear
-    echo -e "*━━━ IDLVPN BACKUP SELESAI ━━━*"
+    echo -e "━━━ IDLVPN BACKUP SELESAI ━━━"
     echo -e ""
-    echo -e "*IP VPS :* \`${IP}\`"
-    echo -e "*Domain :* \`${domain}\`"
-    echo -e "*Tanggal :* ${date}"
-    echo -e "*Notifikasi Email :* ${MAIL_STATUS}"
-    echo -e "*Link Backup :*"
-    echo -e "\`${link}\`"
+    echo -e "IP VPS : ${IP}"
+    echo -e "Domain : ${domain}"
+    echo -e "Tanggal : ${date}"
+    echo -e "Notifikasi Email : ${MAIL_STATUS}"
+    echo -e "Link Backup :"
+    echo -e "${link}"
     echo -e ""
-    echo -e "_Salin link di atas untuk Restore di VPS baru._"
+    echo -e "Salin link di atas untuk Restore di VPS baru."
     echo -e ""
     read -n 1 -s -r -p "Press any key to back on menu"
     menu-backup
