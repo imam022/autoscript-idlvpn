@@ -74,9 +74,8 @@ rm -rf /root/backup
 link=""
 if rclone listremotes 2>/dev/null | grep -q "^dr:"; then
     rclone copy "/root/${FILE_NAME}" dr:backup/ >/dev/null 2>&1
-    url=$(rclone link "dr:backup/${FILE_NAME}" 2>/dev/null)
-    id=$(echo "$url" | grep "^https" | cut -d"=" -f2)
-    [[ -n "$id" ]] && link="https://drive.google.com/u/4/uc?id=${id}&export=download"
+    id=$(rclone lsjson "dr:backup/${FILE_NAME}" 2>/dev/null | grep -o '"ID":"[^"]*"' | cut -d'"' -f4)
+    [[ -n "$id" ]] && link="https://drive.google.com/uc?id=${id}&export=download"
 fi
 
 if [[ -z "$link" ]]; then
