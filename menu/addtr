@@ -71,7 +71,7 @@ echo -e "• Durasi : $masaaktif Hari"
 echo -e "• Dibuat : $tnggl"
 echo -e "• Expired : $expe"
 echo -e ""
-echo -e "_Powered by IDLVPN Infrastructure_"
+echo -e "_Powered by IDLVPN Premium_"
 echo -e ""
 read -n 1 -s -r -p "Press any key to back on menu"
 			m-trojan

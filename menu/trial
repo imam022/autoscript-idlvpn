@@ -139,7 +139,7 @@ echo -e "OVPN Config : https://${domain}/"
 echo -e "Link Akun : https://${domain}/ssh-$Login.txt"
 echo -e ""
 echo -e "Masa Aktif : $pup Menit"
-echo -e "Powered by IDLVPN Infrastructure"
+echo -e "Powered by IDLVPN Premium"
 echo -e ""
 read -n 1 -s -r -p "Press any key to back on menu"
 menu
