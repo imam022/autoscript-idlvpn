@@ -85,7 +85,7 @@ let ssa=$ssx/2
 clear
 clear
 echo -e ""
-echo -e "\E[44;1;39m ꧁࿇ SCRIPT SEDERHANA PENUH CINTA ࿇꧂ \E[0m"
+echo -e "\E[44;1;39m ꧁࿇ IDLVPN PREMIUM TUNNELING SERVER ࿇꧂ \E[0m"
 echo -e ""                       
 echo -e " ${NC} ╭════════════════════════════════════════════════════════════╮"
 echo -e " ${NC} │\e[1;97;101m     IDLVPN Tunneling Server Management      \e[0m${NC}│"
@@ -110,7 +110,7 @@ echo -e "               ${green} VLESS/WS/GRPC    $YELL=\033[0;37m $vla  ${YELL}
 echo -e "               ${green} TROJAN/WS/GRPC   $YELL=\033[0;37m $trb  ${YELL}$a"
 echo -e "               ${green} SHADOW/WS/GRPC   $YELL=\033[0;37m $ssa  ${YELL}$a"
 echo -e " ${NC}         ═════════════════════════════════════════════${NC}" 
-echo -e " ${p}        >>> install via github.com/Imam022 <<<${RESET}"
+echo -e " ${p}        >>> POWERED BY IDLVPN NETWORK <<<${RESET}"
 echo -e " ${NC} ╭═══════════════════╮╭═══════════════════╮╭══════════════════╮$NC"
 echo -e " ${NC} │${p} SSH     $status_ssh   ${p}  NOOBZVPN   $noobz ${p}    NGINX $status_nginx ${p}    HAPROXY  $status_haproxy    ${NC}"
 echo -e " ${NC} │${p} WS-ePro $status_ws_epro    ${p} UDP CUSTOM $status_udp ${p}    XRAY  $status_xray ${p}    DROPBEAR $status_dropbear    ${NC}"
