@@ -139,7 +139,7 @@ Berakhir Pada    : $expe
 ==========================
 Payload WSS: GET wss://bug.com/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf] 
 ==========================
-OVPN Download : https://$domain:81/
+OVPN Download : https://${domain}/
 ==========================
 
 END
@@ -168,9 +168,9 @@ TEXT="
 <code>==========================</code>
 <code>Payload WSS      : </code><code>GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]</code>
 <code>==========================</code>
-OVPN Download : https://$domain:81/
+OVPN Download : https://${domain}/
 <code>==========================</code>
-<code>Save Link Account: </code>https://$domain:81/ssh-$Login.txt
+<code>Save Link Account: </code>https://${domain}/ssh-$Login.txt
 <code>==========================</code>
 Aktif Selama         : $masaaktif Hari
 Dibuat Pada          : $tnggl
@@ -203,8 +203,8 @@ echo -e "Format HC : $domain:80@$Login:$Pass"
 echo -e "Payload WSS :"
 echo -e "GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]"
 echo -e ""
-echo -e "OVPN Config : http://${MYIP}:81/"
-echo -e "Link Akun : http://${MYIP}:81/ssh-$Login.txt"
+echo -e "OVPN Config : https://${domain}/"
+echo -e "Link Akun : https://${domain}/ssh-$Login.txt"
 echo -e ""
 echo -e "━━━ MASA AKTIF ━━━"
 echo -e "• Durasi : $masaaktif Hari"

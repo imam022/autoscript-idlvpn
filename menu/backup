@@ -81,7 +81,7 @@ fi
 if [[ -z "$link" ]]; then
     mkdir -p /var/www/html
     cp -f "/root/${FILE_NAME}" "/var/www/html/${FILE_NAME}"
-    link="https://${domain}:81/${FILE_NAME}"
+    link="https://${domain}/${FILE_NAME}"
 fi
 
 MAIL_STATUS="Tidak aktif (Email kosong)"

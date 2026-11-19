@@ -265,7 +265,7 @@ Name      : vmess-grpc</code>
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
 <code>${vmesslink3}</code>
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
-Format OpenClash : https://${domain}:81/vmess-$user.txt
+Format OpenClash : https://${domain}/vmess-$user.txt
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
 Aktif Selama   : $pup Menit
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
@@ -295,7 +295,7 @@ echo -e "Link none TLS : ${vmesslink2}"
 echo -e "\033[1;96m___________________________________________\033[0m"
 echo -e "Link GRPC : ${vmesslink3}"
 echo -e "\033[1;96m___________________________________________\033[0m"
-echo -e "Format OpenClash : http://${MYIP}:81/vmess-$user.txt"
+echo -e "Format OpenClash : https://${domain}/vmess-$user.txt"
 echo -e "\033[1;96m___________________________________________\033[0m"
 echo -e "Aktif Selama : $pup menit"
 echo -e "\033[1;96m___________________________________________\033[0m"
