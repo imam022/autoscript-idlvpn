@@ -134,7 +134,7 @@ service cron restart > /dev/null 2>&1
 cat >/var/www/html/vmess-$user.txt <<-END
 
 ====================
-BY Idlvpn Premium
+BY Powered by IDLVPN Premium
 
 ====================
 

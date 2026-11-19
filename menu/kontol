@@ -7,7 +7,7 @@ echo -e " -------------------------"
 echo -e "    Fix Haproxy & Nginx            "
 echo -e " ------------------------- "
 echo -e ""
-echo -e " Install by Idlvpn Premium "
+echo -e " Install by Powered by IDLVPN Premium "
 echo -e ""
 read -p " Masukin Domainya : " -e domain
 

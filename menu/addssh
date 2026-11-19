@@ -112,7 +112,7 @@ clear
 
 cat > /var/www/html/ssh-$Login.txt <<-END
 ==========================
-BY Idlvpn Premium
+BY Powered by IDLVPN Premium
 
 ==========================
 Username         : $Login

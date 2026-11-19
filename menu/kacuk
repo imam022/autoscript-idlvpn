@@ -97,7 +97,7 @@ center() {
 
 function Sc_Credit(){
 BOX_WIDTH=48
-TEXT="SCRIPT BY Idlvpn Premium "
+TEXT="SCRIPT BY Powered by IDLVPN Premium "
 TEXT_LENGTH=${#TEXT}
 LEFT_PADDING=$(( (BOX_WIDTH - TEXT_LENGTH) / 2 ))
 RIGHT_PADDING=$(( BOX_WIDTH - TEXT_LENGTH - LEFT_PADDING ))

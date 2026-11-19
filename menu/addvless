@@ -135,7 +135,7 @@ clear
 cat >/var/www/html/vless-$user.txt <<-END
 
 ====================
-BY Idlvpn Premium
+BY Powered by IDLVPN Premium
 
 ====================
 
@@ -236,7 +236,7 @@ echo -e "Aktif Selama : $masaaktif Hari"
 echo -e "Dibuat Pada : $tnggl"
 echo -e "Berakhir Pada : $expe"
 echo -e " "
-echo -e "\033[0;32m Idlvpn Premium ${NC} "
+echo -e "\033[0;32m Powered by IDLVPN Premium ${NC} "
 echo "" 
 read -n 1 -s -r -p "Press any key to back on menu"
 

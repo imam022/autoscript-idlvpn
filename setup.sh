@@ -86,8 +86,8 @@ clear;clear;clear
 echo -e "${YELLOW}----------------------------------------------------------${NC}"
 echo -e " Dev > Script ${YELLOW}(${NC}${green} Stable Edition ${NC}${YELLOW})${NC}"
 echo -e " This Will Quick Setup VPN Server On Your Server"
-echo -e " Author : ${green}Idlvpn Premium ${NC}"
-echo -e " © Idlvpn Premium ${YELLOW}(${NC} 2025 ${YELLOW})${NC}"
+echo -e " Author : ${green}Powered by IDLVPN Premium ${NC}"
+echo -e " © Powered by IDLVPN Premium ${YELLOW}(${NC} 2025 ${YELLOW})${NC}"
 echo -e "${YELLOW}----------------------------------------------------------${NC}"
 echo ""
 sleep 2

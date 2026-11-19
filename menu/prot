@@ -28,7 +28,7 @@ echo -e " ${ORANGE} │  ${GREEN}» ${NC}Backend local Xray        : ${GREEN}100
 echo -e " ${ORANGE} │  ${GREEN}» ${NC}Backend local Nginx       : ${GREEN}1010, 1012, 1013    ${ORANGE}│"
 echo -e " ${ORANGE} │  ${GREEN}» ${NC}Backend local WS-ePro     : ${GREEN}10012, 10015         ${ORANGE}│"
 echo -e " ${ORANGE} │ ${ORANGE}                                               │"
-echo -e " ${ORANGE} │  \e[1;97;101m✶ Install by Idlvpn Premium ✶ ${NC}       ${ORANGE}│"
+echo -e " ${ORANGE} │  \e[1;97;101m✶ Install by Powered by IDLVPN Premium ✶ ${NC}       ${ORANGE}│"
 echo -e " ${ORANGE} ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NC}"
 echo ""
 read -n 1 -s -r -p "  Press Any Key To Back On Menu"

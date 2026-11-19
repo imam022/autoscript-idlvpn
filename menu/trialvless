@@ -75,7 +75,7 @@ vlesslink3="vless://${uuid}@${domain}:443?encryption=none&security=tls&sni=${dom
 cat >/var/www/html/vless-$user.txt <<-END
 
 ====================
-BY Idlvpn Premium
+BY Powered by IDLVPN Premium
 
 ====================
 

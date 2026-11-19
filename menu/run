@@ -122,7 +122,7 @@ echo -e " ${hijau}└───────────────────�
 echo -e " ${hijau}┌────────────────────────────────────────────┐${NC}"
 echo -e " ${hijau}│$NC$NC\033[41m             CONTACT SUPPORT / CS           $NC${hijau}│$NC"
 echo -e " ${hijau}└────────────────────────────────────────────┘${NC}"
-echo -e " ${hijau}│$NC SUPPORT             $blue= ${NC} ST Idlvpn Premium ${NC}  "
+echo -e " ${hijau}│$NC SUPPORT             $blue= ${NC} ST Powered by IDLVPN Premium ${NC}  "
 echo -e " ${hijau}│$NC WHATSAPP            $blue= ${NC} ${NC}  "
 echo -e " ${hijau}└────────────────────────────────────────────┘${NC}"
 echo ""

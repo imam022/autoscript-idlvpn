@@ -103,7 +103,7 @@ trojanlink="trojan://${uuid}@${domain}:443?security=tls&sni=${domain}&type=ws&ho
 
 cat >/var/www/html/trojan-$user.txt <<-END
 ====================
-BY Idlvpn Premium
+BY Powered by IDLVPN Premium
 
 ====================
 
