@@ -104,8 +104,8 @@ printf "    ${green}%-10s${RESET} ${NC}┃${RESET} [1;37m%s Akun[0m\n" "TROJAN
 printf "    ${green}%-10s${RESET} ${NC}┃${RESET} [1;37m%s Akun[0m\n" "SHADOW" "$ssa"
 echo -e "  ${YELL}──────────────────────────────────────────────────
   >> SERVICE STATUS ${RESET}"
-echo -e "    ${p}SSH:${RESET}$statusssh ${NC}┃${RESET} ${p}XRAY:${RESET}$statusxray ${NC}┃${RESET} ${p}NGINX:${RESET}$statusnginx ${NC}┃${RESET} ${p}HAPROXY:${RESET}$statushaproxy"
-echo -e "    ${p}WS :${RESET}$statuswsepro ${NC}┃${RESET} ${p}DROP:${RESET}$statusdropbear ${NC}┃${RESET} ${p}UDP :${RESET}$statusudp ${NC}┃${RESET} ${p}NOOBZ :${RESET}$noobz"
+echo -e "    ${p}SSH:${RESET}$status_ssh ${NC}┃${RESET} ${p}XRAY:${RESET}$status_xray ${NC}┃${RESET} ${p}NGINX:${RESET}$status_nginx ${NC}┃${RESET} ${p}HAPROXY:${RESET}$status_haproxy"
+echo -e "    ${p}WS :${RESET}$status_ws_epro ${NC}┃${RESET} ${p}DROP:${RESET}$status_dropbear ${NC}┃${RESET} ${p}UDP  :${RESET}$status_udp ${NC}┃${RESET} ${p}NOOBZ  :${RESET}$noobz"
 echo -e "  ${NC}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo -e "  ${YELL}>> CONTROL PANEL ${RESET}"
 printf "    ${YELL}[01]${RESET} %-11s ${NC}┃${RESET} ${YELL}[08]${RESET} %-11s ${NC}┃${RESET} ${YELL}[15]${RESET} %-12s\n" "SSH MENU" "BCKP/RSTR" "SLOWDNS"

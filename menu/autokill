@@ -43,7 +43,7 @@ case $AutoKill in
                 echo -e "\033[1;93m┌──────────────────────────────────────────┐\033[0m"
                 echo -e ""
                 echo -e "        Allowed MultiLogin : $max"
-                echo -e "        AutoKill Every : 1 Minutes"      
+                echo -e "        AutoKill Every     : 1 Minutes"      
                 echo -e ""
                 echo -e "\033[1;93m└──────────────────────────────────────────┘\033[0m"                         read -n 1 -s -r -p "Press [ Enter ] to back on menu"
                 menu                                
@@ -60,7 +60,7 @@ case $AutoKill in
                 echo -e "\033[1;93m┌──────────────────────────────────────────┐\033[0m"
                 echo -e ""
                 echo -e "        Allowed MultiLogin : $max"
-                echo -e "        AutoKill Every : 2 Minutes"
+                echo -e "        AutoKill Every     : 2 Minutes"
                 echo -e ""
                 echo -e "\033[1;93m└──────────────────────────────────────────┘\033[0m"
                 read -n 1 -s -r -p "Press [ Enter ] to back on menu"
@@ -78,7 +78,7 @@ case $AutoKill in
                 echo -e "\033[1;93m┌──────────────────────────────────────────┐\033[0m"
                 echo -e ""
                 echo -e "        Allowed MultiLogin : $max"
-                echo -e "        AutoKill Every : 3 Minutes"
+                echo -e "        AutoKill Every     : 3 Minutes"
                 echo -e ""
                 echo -e "\033[1;93m└──────────────────────────────────────────┘\033[0m"
                 read -n 1 -s -r -p "Press [ Enter ] to back on menu"menu

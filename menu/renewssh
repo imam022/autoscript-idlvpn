@@ -53,7 +53,7 @@ echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━�
 echo -e "        Perpanjang Masa Aktif SSH             "
 echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"  
 echo -e ""
-echo -e " Username : $User"
+echo -e " Username   : $User"
 echo -e " Days Added : $Days Days"
 echo -e " Expires on :  $Expiration_Display"
 echo -e ""

@@ -29,9 +29,9 @@ function start() {
 EOF
     systemctl restart cron 2>/dev/null || service cron restart 2>/dev/null
     clear
-    echo -e "━━━ AUTOBACKUP AKTIF ━━━"
-    echo -e "• Jadwal : Setiap hari pukul 00:05"
-    echo -e "• Tujuan : $(cat /root/email)"
+    echo -e "*━━━ AUTOBACKUP AKTIF ━━━*"
+    echo -e "• Jadwal  : Setiap hari pukul 00:05"
+    echo -e "• Tujuan  : $(cat /root/email)"
     echo -e ""
     read -n 1 -s -r -p "Press any key to back on menu"
     autobackup
@@ -41,7 +41,7 @@ function stop() {
     sed -i "/^# BEGIN_Backup/,/^# END_Backup/d" /etc/crontab
     systemctl restart cron 2>/dev/null || service cron restart 2>/dev/null
     clear
-    echo -e "━━━ AUTOBACKUP DIMATIKAN ━━━"
+    echo -e "*━━━ AUTOBACKUP DIMATIKAN ━━━*"
     echo -e ""
     read -n 1 -s -r -p "Press any key to back on menu"
     autobackup
@@ -100,8 +100,8 @@ Tanggal : $date" | mail -s "Test Email Backup IDLVPN" "$email"
     autobackup
 }
 
-echo -e "━━━ IDLVPN AUTOBACKUP DATA ━━━"
-echo -e "• Status : $sts"
+echo -e "*━━━ IDLVPN AUTOBACKUP DATA ━━━*"
+echo -e "• Status         : $sts"
 echo -e "• Email Penerima : $EMAIL_NOW"
 echo -e ""
 echo -e "  [1] Aktifkan Autobackup (00:05 Harian)"

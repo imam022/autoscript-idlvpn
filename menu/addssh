@@ -139,7 +139,7 @@ Berakhir Pada    : $expe
 ==========================
 Payload WSS: GET wss://bug.com/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf] 
 ==========================
-OVPN Download : http://${MYIP}:81/
+OVPN Download : https://$domain:81/
 ==========================
 
 END
@@ -168,9 +168,9 @@ TEXT="
 <code>==========================</code>
 <code>Payload WSS      : </code><code>GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]</code>
 <code>==========================</code>
-OVPN Download : http://${MYIP}:81/
+OVPN Download : https://$domain:81/
 <code>==========================</code>
-<code>Save Link Account: </code>http://${MYIP}:81/ssh-$Login.txt
+<code>Save Link Account: </code>https://$domain:81/ssh-$Login.txt
 <code>==========================</code>
 Aktif Selama         : $masaaktif Hari
 Dibuat Pada          : $tnggl
@@ -179,15 +179,15 @@ Berakhir Pada        : $expe
 "
 clear
 echo ""
-echo -e "━━━ IDLVPN SSH & OVPN ACCOUNT ━━━"
+echo -e "*━━━ IDLVPN SSH & OVPN ACCOUNT ━━━*"
 echo -e ""
-echo -e "Username : $Login"
-echo -e "Password : $Pass"
-echo -e "Host : $domain"
-echo -e "Nameserver : ${NS}"
-echo -e "Pub Key : ${PUB}"
+echo -e "*Username :* \`$Login\`"
+echo -e "*Password :* \`$Pass\`"
+echo -e "*Host :* \`$domain\`"
+echo -e "*Nameserver :* \`${NS}\`"
+echo -e "*Pub Key :* \`${PUB}\`"
 echo -e ""
-echo -e "━━━ PORTS & SERVICES ━━━"
+echo -e "*━━━ PORTS & SERVICES ━━━*"
 echo -e "• OpenSSH : 22, 80, 443"
 echo -e "• Dropbear : 109, 443"
 echo -e "• SSH WS : 80, 8080, 8880, 2082"
@@ -198,20 +198,20 @@ echo -e "• SSL/TLS : 400-900"
 echo -e "• OVPN TCP/UDP : 1194, 2200 (SSL: 443)"
 echo -e "• BadVPN UDPG : 7100, 7200, 7300"
 echo -e ""
-echo -e "━━━ CONFIG & PAYLOAD ━━━"
-echo -e "Format HC : $domain:80@$Login:$Pass"
-echo -e "Payload WSS :"
-echo -e "GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]"
+echo -e "*━━━ CONFIG & PAYLOAD ━━━*"
+echo -e "*Format HC :* \`$domain:80@$Login:$Pass\`"
+echo -e "*Payload WSS :*"
+echo -e "\`GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]\`"
 echo -e ""
-echo -e "OVPN Config : http://${MYIP}:81/"
-echo -e "Link Akun : http://${MYIP}:81/ssh-$Login.txt"
+echo -e "*OVPN Config :* https://$domain:81/"
+echo -e "*Link Akun :* https://$domain:81/ssh-$Login.txt"
 echo -e ""
-echo -e "━━━ MASA AKTIF ━━━"
+echo -e "*━━━ MASA AKTIF ━━━*"
 echo -e "• Durasi : $masaaktif Hari"
 echo -e "• Dibuat : $tnggl"
 echo -e "• Expired : $expe"
 echo -e ""
-echo -e "Powered by IDLVPN Infrastructure"
+echo -e "_Powered by IDLVPN Infrastructure_"
 echo -e ""
 read -n 1 -s -r -p "Press any key to back on menu"
 menu
