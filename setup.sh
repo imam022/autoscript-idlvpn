@@ -855,7 +855,8 @@ clear
 print_install "Menginstall ePro WebSocket Proxy"
     fetch_file "media/ws" "/usr/bin/ws" >/dev/null 2>&1
     fetch_file "media/tun.conf" "/usr/bin/tun.conf" >/dev/null 2>&1
-    fetch_file "media/ws.service" "/etc/systemd/system/ws.service" >/dev/null 2>&1
+    fetch_file "media/ws.py" "/usr/local/bin/ws.py" && chmod +x /usr/local/bin/ws.py
+fetch_file "media/ws.service" "/etc/systemd/system/ws.service" >/dev/null 2>&1
     chmod +x /etc/systemd/system/ws.service
     chmod +x /usr/bin/ws
     chmod 644 /usr/bin/tun.conf
