@@ -315,7 +315,7 @@ def create_account(data):
 
         os.makedirs("/etc/xray/ssh", exist_ok=True)
         with open(f"/etc/xray/ssh/{user}", "w", encoding="utf-8") as f:
-            f.write(str(iplimit))
+            f.write(f"{iplimit}|{password}")
 
         formatted, primary_link = format_account_bundle(
             "ssh", domain, user, password, days, quota, iplimit, created_human, exp_human
@@ -470,16 +470,24 @@ def list_accounts():
                             pass
 
                         iplimit = 2
+                        saved_pass = "(Buat ulang / ganti pass agar tersalin)"
                         lim_file = f"/etc/xray/ssh/{uname}"
                         if os.path.exists(lim_file):
                             try:
                                 with open(lim_file, "r", encoding="utf-8") as lf:
-                                    iplimit = int(lf.read().strip())
+                                    raw_lim = lf.read().strip()
+                                    if "|" in raw_lim:
+                                        lim_p, pass_p = raw_lim.split("|", 1)
+                                        iplimit = int(lim_p)
+                                        if pass_p:
+                                            saved_pass = pass_p
+                                    else:
+                                        iplimit = int(raw_lim)
                             except Exception:
                                 pass
 
                         formatted, primary_link = format_account_bundle(
-                            "ssh", domain, uname, "(Password rahasia saat dibuat)", days_left, 0, iplimit, "-", exp_str
+                            "ssh", domain, uname, saved_pass, days_left, 0, iplimit, "-", exp_str
                         )
                         accounts.append({
                             "protocol": "ssh",
@@ -487,7 +495,7 @@ def list_accounts():
                             "expired": exp_str,
                             "online": uname in ssh_online,
                             "formatted_text": formatted,
-                            "primary_link": f"{domain}:443@{uname}"
+                            "primary_link": primary_link
                         })
     except Exception:
         pass
