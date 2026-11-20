@@ -36,13 +36,10 @@ status_ws_epro=$(status_on_error ws)
 status_udp=$(status_on_error udp-custom)
 noobz=$(status_on_error noobzvpns)
 
-vlx=$(grep -c -E "^#& " "/etc/xray/config.json" 2>/dev/null || echo 0)
-let vla=$vlx/2
-vmc=$(grep -c -E "^### " "/etc/xray/config.json" 2>/dev/null || echo 0)
-let vma=$vmc/2
+vla=$(grep -E "^### " "/etc/vless/.vless.db" 2>/dev/null | wc -l)
+vma=$(grep -E "^### " "/etc/vmess/.vmess.db" 2>/dev/null | wc -l)
 ssh1="$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)"
-trx=$(grep -c -E "^#! " "/etc/xray/config.json" 2>/dev/null || echo 0)
-let trb=$trx/2
+trb=$(grep -E "^### " "/etc/trojan/.trojan.db" 2>/dev/null | wc -l)
 ssx=$(grep -c -E "^#!# " "/etc/xray/config.json" 2>/dev/null || echo 0)
 let ssa=$ssx/2
 
