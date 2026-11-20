@@ -95,12 +95,25 @@ def get_metrics():
         "trojan": count_db("/etc/trojan/.trojan.db")
     }
 
+def load_xray_json(cfg_path):
+    with open(cfg_path, "r", encoding="utf-8") as f:
+        raw = f.read()
+    # Bersihkan komentar # atau // di luar string JSON serta trailing comma
+    cleaned_lines = []
+    for line in raw.splitlines():
+        s = line.strip()
+        if s.startswith("#") or s.startswith("//"):
+            continue
+        cleaned_lines.append(line)
+    cleaned = "\n".join(cleaned_lines)
+    cleaned = re.sub(r",(\s*[}\]])", r"\1", cleaned)
+    return json.loads(cleaned)
+
 def inject_xray_inbound(tag_keyword, client_entry):
     cfg_path = "/etc/xray/config.json"
     if not os.path.exists(cfg_path):
         return False
-    with open(cfg_path, "r", encoding="utf-8") as f:
-        cfg = json.load(f)
+    cfg = load_xray_json(cfg_path)
 
     modified = False
     for inb in cfg.get("inbounds", []):
