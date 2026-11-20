@@ -911,6 +911,29 @@ systemctl restart haproxy || true
     systemctl enable --now openvpn >/dev/null 2>&1 || true
     systemctl enable --now cron
     systemctl enable --now haproxy
+
+cat << 'EOF' > /etc/systemd/system/idlvpn-agent.service
+[Unit]
+Description=IDLVPN Panel Control Agent
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 /usr/local/sbin/idlvpn-agent.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+mkdir -p /etc/idlvpn
+if [[ ! -s /etc/idlvpn/agent.conf ]]; then
+    echo "TOKEN=IDL-$(openssl rand -hex 6 | tr 'a-z' 'A-Z')" > /etc/idlvpn/agent.conf
+fi
+systemctl daemon-reload
+systemctl enable --now idlvpn-agent >/dev/null 2>&1 || true
+
     systemctl enable --now netfilter-persistent
     systemctl enable --now ws
 history -c
@@ -945,7 +968,7 @@ function menu(){
     print_install "Memasang Menu Packet"
     mkdir -p /usr/local/sbin /opt/autoxray/menu
     mkdir -p /etc/idlvpn
-    MENU_FILES="addhost addss addssh addtr addvless addws asu autobackup autokill autoreboot backup bw ceklim cekss cekssh cektr cekvless cekws change-color clearcache clearlog delexp delss delssh deltr delvless delws fixcert kacuk kontol limitspeed lock m-noob m-slowdns m-sshws m-ssws m-system m-trojan m-vless m-vmess member menu menu-backup prot renewss renewssh renewtr renewvless renewws restart restore run sdo speedtest tendang trial trialss trialtr trialvless trialws udepe unlock update-menu xp"
+    MENU_FILES="addhost addss addssh addtr addvless addws asu autobackup autokill autoreboot backup bw ceklim cekss cekssh cektr cekvless cekws change-color clearcache idlvpn-agent.py panel-agent clearlog delexp delss delssh deltr delvless delws fixcert kacuk kontol limitspeed lock m-noob m-slowdns m-sshws m-ssws m-system m-trojan m-vless m-vmess member menu menu-backup prot renewss renewssh renewtr renewvless renewws restart restore run sdo speedtest tendang trial trialss trialtr trialvless trialws udepe unlock update-menu xp"
     for file in $MENU_FILES; do
         fetch_file "menu/$file" "/usr/local/sbin/$file" >/dev/null 2>&1 || { print_error "Menu $file tidak ditemukan"; exit 1; }
         chmod +x "/usr/local/sbin/$file"

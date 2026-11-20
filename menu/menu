@@ -74,7 +74,7 @@ echo -e "  ${GOLD}>> CONTROL PANEL${RESET}"
 printf "    ${GOLD}[01]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[08]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[15]${RESET} ${CYAN}%-12s${RESET}\n" "SSH MENU" "BCKP/RSTR" "SLOWDNS"
 printf "    ${GOLD}[02]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[09]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[16]${RESET} ${CYAN}%-12s${RESET}\n" "VMESS" "GOTOP RAM" "DOMAIN"
 printf "    ${GOLD}[03]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[10]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[17]${RESET} ${CYAN}%-12s${RESET}\n" "VLESS" "RESTART" "FIX CERT"
-printf "    ${GOLD}[04]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[11]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[18]${RESET} ${CYAN}%-12s${RESET}\n" "TROJAN" "COLOUR" "BANNER"
+printf "    ${GOLD}[04]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[11]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[18]${RESET} ${CYAN}%-12s${RESET}\n" "TROJAN" "PNL AGENT" "BANNER"
 printf "    ${GOLD}[05]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[12]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[19]${RESET} ${CYAN}%-12s${RESET}\n" "NOOBZVPN" "UPDATE" "RST BANNER"
 printf "    ${GOLD}[06]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[13]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[20]${RESET} ${CYAN}%-12s${RESET}\n" "SS-LIBEV" "RUNNING" "SPEEDTEST"
 printf "    ${GOLD}[07]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[14]${RESET} ${CYAN}%-11s${RESET} ${NEON}┃${RESET} ${GOLD}[21]${RESET} ${CYAN}%-12s${RESET}\n" "UDP CUST" "INFO PORT" "EKSTRAK"
@@ -95,7 +95,7 @@ case $opt in
 8 | 08) clear; menu-backup ;;
 9 | 09) clear; gotop ;;
 10) clear; restart ;;
-11) clear; change-color ;;
+11) clear; panel-agent ;;
 12) clear; update-menu ;;
 13) clear; run ;;
 14) clear; prot ;;
