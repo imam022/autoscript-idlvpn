@@ -36,6 +36,32 @@ def get_domain():
     except Exception:
         return "localhost"
 
+def is_service_active(names):
+    for svc in names:
+        try:
+            res = subprocess.run(
+                ["systemctl", "is-active", "--quiet", svc],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            if res.returncode == 0:
+                return True
+        except Exception:
+            pass
+    return False
+
+def get_services_status():
+    return {
+        "ssh": is_service_active(["ssh", "sshd"]),
+        "xray": is_service_active(["xray"]),
+        "nginx": is_service_active(["nginx"]),
+        "haproxy": is_service_active(["haproxy"]),
+        "ws": is_service_active(["ws", "ws-epro"]),
+        "dropbear": is_service_active(["dropbear"]),
+        "udp": is_service_active(["udp-custom"]),
+        "noobz": is_service_active(["noobzvpns"])
+    }
+
 def get_metrics():
     ram_str = "-"
     try:
@@ -92,13 +118,13 @@ def get_metrics():
         "ssh": ssh_cnt,
         "vmess": count_db("/etc/vmess/.vmess.db"),
         "vless": count_db("/etc/vless/.vless.db"),
-        "trojan": count_db("/etc/trojan/.trojan.db")
+        "trojan": count_db("/etc/trojan/.trojan.db"),
+        "services": get_services_status()
     }
 
 def load_xray_json(cfg_path):
     with open(cfg_path, "r", encoding="utf-8") as f:
         raw = f.read()
-    # Bersihkan komentar # atau // di luar string JSON serta trailing comma
     cleaned_lines = []
     for line in raw.splitlines():
         s = line.strip()
@@ -131,46 +157,13 @@ def inject_xray_inbound(tag_keyword, client_entry):
         subprocess.run(["systemctl", "restart", "xray"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return modified
 
-def create_account(data):
-    proto = str(data.get("protocol", "")).lower().strip()
-    user = re.sub(r"[^a-zA-Z0-9_-]", "", str(data.get("username", "")).strip())
-    password = str(data.get("password", "")).strip()
-    days = int(data.get("days", 30))
-    quota = int(data.get("quota", 500))
-    iplimit = int(data.get("iplimit", 2))
-
-    if not user:
-        return {"status": "error", "message": "Username tidak valid"}
-
-    domain = get_domain()
-    now = datetime.date.today()
-    exp_date = now + datetime.timedelta(days=days)
-    exp_iso = exp_date.strftime("%Y-%m-%d")
-    exp_human = exp_date.strftime("%d %b, %Y")
-    created_human = now.strftime("%d %b, %Y")
-
+def format_account_bundle(proto, domain, user, password_or_uid, days, quota, iplimit, created_human, exp_human):
     if proto == "ssh":
-        if not password:
-            return {"status": "error", "message": "Password SSH wajib diisi"}
-        subprocess.run(["userdel", "-f", user], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        res = subprocess.run(
-            ["useradd", "-e", exp_iso, "-s", "/bin/false", "-M", user],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        if res.returncode != 0:
-            return {"status": "error", "message": res.stderr.decode().strip() or "Gagal useradd"}
-        p = subprocess.Popen(["passwd", user], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        p.communicate(input=f"{password}\n{password}\n".encode())
-
-        os.makedirs("/etc/xray/ssh", exist_ok=True)
-        with open(f"/etc/xray/ssh/{user}", "w", encoding="utf-8") as f:
-            f.write(str(iplimit))
-
         formatted = (
             f"━━━ IDLVPN SSH ACCOUNT ━━━\n"
             f"Host / IP   : {domain}\n"
             f"Username    : {user}\n"
-            f"Password    : {password}\n"
+            f"Password    : {password_or_uid}\n"
             f"Limit IP    : {iplimit} IP\n"
             f"━━━ PORTS & SPEC ━━━\n"
             f"• OpenSSH   : 22\n"
@@ -184,24 +177,11 @@ def create_account(data):
             f"Berakhir    : {exp_human}\n"
             f"Powered by IDLVPN Premium"
         )
-        return {
-            "status": "success",
-            "formatted_text": formatted,
-            "primary_link": f"{domain}:443@{user}:{password}"
-        }
+        return formatted, f"{domain}:443@{user}:{password_or_uid}"
 
-    uid = str(uuid.uuid4())
+    uid = password_or_uid
 
     if proto == "vmess":
-        os.makedirs("/etc/vmess", exist_ok=True)
-        if quota > 0:
-            with open(f"/etc/vmess/{user}", "w", encoding="utf-8") as f:
-                f.write(str(quota * 1024 * 1024 * 1024))
-        with open("/etc/vmess/.vmess.db", "a", encoding="utf-8") as f:
-            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
-
-        inject_xray_inbound("vmess", {"id": uid, "alterId": 0, "email": user})
-
         def make_vmess(ps, port, net, path_or_svc, tls_val):
             payload = {
                 "v": "2",
@@ -245,18 +225,9 @@ def create_account(data):
             f"Berakhir    : {exp_human}\n"
             f"Powered by IDLVPN Premium"
         )
-        return {"status": "success", "formatted_text": formatted, "primary_link": link_tls}
+        return formatted, link_tls
 
     if proto == "vless":
-        os.makedirs("/etc/vless", exist_ok=True)
-        if quota > 0:
-            with open(f"/etc/vless/{user}", "w", encoding="utf-8") as f:
-                f.write(str(quota * 1024 * 1024 * 1024))
-        with open("/etc/vless/.vless.db", "a", encoding="utf-8") as f:
-            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
-
-        inject_xray_inbound("vless", {"id": uid, "email": user})
-
         link_tls = f"vless://{uid}@{domain}:443?path=%2Fvless&security=tls&encryption=none&host={domain}&type=ws&sni={domain}#{user}-TLS"
         link_ntls = f"vless://{uid}@{domain}:80?path=%2Fvless&security=none&encryption=none&host={domain}&type=ws#{user}-NTLS"
         link_grpc = f"vless://{uid}@{domain}:443?mode=gun&security=tls&encryption=none&type=grpc&serviceName=vless-grpc&sni={domain}#{user}-gRPC"
@@ -282,18 +253,9 @@ def create_account(data):
             f"Berakhir    : {exp_human}\n"
             f"Powered by IDLVPN Premium"
         )
-        return {"status": "success", "formatted_text": formatted, "primary_link": link_tls}
+        return formatted, link_tls
 
     if proto == "trojan":
-        os.makedirs("/etc/trojan", exist_ok=True)
-        if quota > 0:
-            with open(f"/etc/trojan/{user}", "w", encoding="utf-8") as f:
-                f.write(str(quota * 1024 * 1024 * 1024))
-        with open("/etc/trojan/.trojan.db", "a", encoding="utf-8") as f:
-            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
-
-        inject_xray_inbound("trojan", {"password": uid, "email": user})
-
         link_tls = f"trojan://{uid}@{domain}:443?path=%2Ftrojan-ws&security=tls&host={domain}&type=ws&sni={domain}#{user}-TLS"
         link_grpc = f"trojan://{uid}@{domain}:443?mode=gun&security=tls&type=grpc&serviceName=trojan-grpc&sni={domain}#{user}-gRPC"
 
@@ -315,6 +277,96 @@ def create_account(data):
             f"Dibuat Pada : {created_human}\n"
             f"Berakhir    : {exp_human}\n"
             f"Powered by IDLVPN Premium"
+        )
+        return formatted, link_tls
+
+    return "", ""
+
+def create_account(data):
+    proto = str(data.get("protocol", "")).lower().strip()
+    user = re.sub(r"[^a-zA-Z0-9_-]", "", str(data.get("username", "")).strip())
+    password = str(data.get("password", "")).strip()
+    days = int(data.get("days", 30))
+    quota = int(data.get("quota", 500))
+    iplimit = int(data.get("iplimit", 2))
+
+    if not user:
+        return {"status": "error", "message": "Username tidak valid"}
+
+    domain = get_domain()
+    now = datetime.date.today()
+    exp_date = now + datetime.timedelta(days=days)
+    exp_iso = exp_date.strftime("%Y-%m-%d")
+    exp_human = exp_date.strftime("%d %b, %Y")
+    created_human = now.strftime("%d %b, %Y")
+
+    if proto == "ssh":
+        if not password:
+            return {"status": "error", "message": "Password SSH wajib diisi"}
+        subprocess.run(["userdel", "-f", user], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        res = subprocess.run(
+            ["useradd", "-e", exp_iso, "-s", "/bin/false", "-M", user],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        if res.returncode != 0:
+            return {"status": "error", "message": res.stderr.decode().strip() or "Gagal useradd"}
+        p = subprocess.Popen(["passwd", user], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        p.communicate(input=f"{password}\n{password}\n".encode())
+
+        os.makedirs("/etc/xray/ssh", exist_ok=True)
+        with open(f"/etc/xray/ssh/{user}", "w", encoding="utf-8") as f:
+            f.write(str(iplimit))
+
+        formatted, primary_link = format_account_bundle(
+            "ssh", domain, user, password, days, quota, iplimit, created_human, exp_human
+        )
+        return {
+            "status": "success",
+            "formatted_text": formatted,
+            "primary_link": primary_link
+        }
+
+    uid = str(uuid.uuid4())
+
+    if proto == "vmess":
+        os.makedirs("/etc/vmess", exist_ok=True)
+        if quota > 0:
+            with open(f"/etc/vmess/{user}", "w", encoding="utf-8") as f:
+                f.write(str(quota * 1024 * 1024 * 1024))
+        with open("/etc/vmess/.vmess.db", "a", encoding="utf-8") as f:
+            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
+
+        inject_xray_inbound("vmess", {"id": uid, "alterId": 0, "email": user})
+        formatted, link_tls = format_account_bundle(
+            "vmess", domain, user, uid, days, quota, iplimit, created_human, exp_human
+        )
+        return {"status": "success", "formatted_text": formatted, "primary_link": link_tls}
+
+    if proto == "vless":
+        os.makedirs("/etc/vless", exist_ok=True)
+        if quota > 0:
+            with open(f"/etc/vless/{user}", "w", encoding="utf-8") as f:
+                f.write(str(quota * 1024 * 1024 * 1024))
+        with open("/etc/vless/.vless.db", "a", encoding="utf-8") as f:
+            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
+
+        inject_xray_inbound("vless", {"id": uid, "email": user})
+        formatted, link_tls = format_account_bundle(
+            "vless", domain, user, uid, days, quota, iplimit, created_human, exp_human
+        )
+        return {"status": "success", "formatted_text": formatted, "primary_link": link_tls}
+
+    if proto == "trojan":
+        os.makedirs("/etc/trojan", exist_ok=True)
+        if quota > 0:
+            with open(f"/etc/trojan/{user}", "w", encoding="utf-8") as f:
+                f.write(str(quota * 1024 * 1024 * 1024))
+        with open("/etc/trojan/.trojan.db", "a", encoding="utf-8") as f:
+            f.write(f"### {user} {exp_iso} {uid} {quota} {iplimit}\n")
+
+        inject_xray_inbound("trojan", {"password": uid, "email": user})
+        formatted, link_tls = format_account_bundle(
+            "trojan", domain, user, uid, days, quota, iplimit, created_human, exp_human
         )
         return {"status": "success", "formatted_text": formatted, "primary_link": link_tls}
 
@@ -342,8 +394,57 @@ def remove_xray_inbound(tag_keyword, username):
         subprocess.run(["systemctl", "restart", "xray"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return modified
 
+def get_online_users():
+    ssh_online = set()
+    xray_online = set()
+
+    # 1. Deteksi proses sshd & dropbear aktif
+    try:
+        ps_out = subprocess.check_output(["ps", "-eo", "comm,args"], stderr=subprocess.DEVNULL).decode("utf-8", errors="ignore")
+        for line in ps_out.splitlines():
+            s = line.strip()
+            m_sshd = re.search(r"sshd:\s+([a-zA-Z0-9_-]+)(?:@|\s|$)", s)
+            if m_sshd and m_sshd.group(1) not in ("root", "[priv]", "[net]", "sshd"):
+                ssh_online.add(m_sshd.group(1))
+            if "dropbear" in s:
+                m_db = re.search(r"dropbear.*?\s([a-zA-Z0-9_-]+)$", s)
+                if m_db and m_db.group(1) != "root":
+                    ssh_online.add(m_db.group(1))
+    except Exception:
+        pass
+
+    # 2. Deteksi akses log Xray dalam 3 menit terakhir
+    access_log = "/var/log/xray/access.log"
+    if os.path.exists(access_log):
+        try:
+            tail_out = subprocess.check_output(["tail", "-n", "350", access_log], stderr=subprocess.DEVNULL).decode("utf-8", errors="ignore")
+            now_dt = datetime.datetime.now()
+            for line in tail_out.splitlines():
+                m_email = re.search(r"email:\s*([a-zA-Z0-9_-]+)", line)
+                if not m_email:
+                    continue
+                uname = m_email.group(1)
+                m_ts = re.match(r"^(\d{4}/\d{2}/\d{2}\s+\d{2}:\d{2}:\d{2})", line)
+                if m_ts:
+                    try:
+                        log_dt = datetime.datetime.strptime(m_ts.group(1), "%Y/%m/%d %H:%M:%S")
+                        if abs((now_dt - log_dt).total_seconds()) <= 180:
+                            xray_online.add(uname)
+                    except Exception:
+                        xray_online.add(uname)
+                else:
+                    xray_online.add(uname)
+        except Exception:
+            pass
+
+    return ssh_online, xray_online
+
 def list_accounts():
     accounts = []
+    domain = get_domain()
+    today = datetime.date.today()
+    ssh_online, xray_online = get_online_users()
+
     # 1. SSH Users
     try:
         with open("/etc/passwd", "r", encoding="utf-8") as f:
@@ -354,17 +455,40 @@ def list_accounts():
                     if uid >= 1000:
                         uname = parts[0]
                         exp_str = "-"
+                        days_left = 30
                         try:
                             out = subprocess.check_output(["chage", "-l", uname], stderr=subprocess.DEVNULL).decode("utf-8", errors="ignore")
                             for l in out.splitlines():
                                 if "Account expires" in l:
                                     val = l.split(":", 1)[1].strip()
                                     if val.lower() != "never":
-                                        exp_str = val
+                                        parsed_d = datetime.datetime.strptime(val, "%b %d, %Y").date()
+                                        exp_str = parsed_d.strftime("%Y-%m-%d")
+                                        days_left = max(0, (parsed_d - today).days)
                                     break
                         except Exception:
                             pass
-                        accounts.append({"protocol": "ssh", "username": uname, "expired": exp_str})
+
+                        iplimit = 2
+                        lim_file = f"/etc/xray/ssh/{uname}"
+                        if os.path.exists(lim_file):
+                            try:
+                                with open(lim_file, "r", encoding="utf-8") as lf:
+                                    iplimit = int(lf.read().strip())
+                            except Exception:
+                                pass
+
+                        formatted, primary_link = format_account_bundle(
+                            "ssh", domain, uname, "(Password rahasia saat dibuat)", days_left, 0, iplimit, "-", exp_str
+                        )
+                        accounts.append({
+                            "protocol": "ssh",
+                            "username": uname,
+                            "expired": exp_str,
+                            "online": uname in ssh_online,
+                            "formatted_text": formatted,
+                            "primary_link": f"{domain}:443@{uname}"
+                        })
     except Exception:
         pass
 
@@ -383,10 +507,29 @@ def list_accounts():
                     if line.startswith("### "):
                         parts = line.strip().split()
                         if len(parts) >= 3:
+                            uname = parts[1]
+                            exp_iso = parts[2]
+                            acc_uuid = parts[3] if len(parts) >= 4 else ""
+                            quota = int(parts[4]) if len(parts) >= 5 and parts[4].isdigit() else 500
+                            iplimit = int(parts[5]) if len(parts) >= 6 and parts[5].isdigit() else 2
+
+                            days_left = 30
+                            try:
+                                parsed_d = datetime.datetime.strptime(exp_iso, "%Y-%m-%d").date()
+                                days_left = max(0, (parsed_d - today).days)
+                            except Exception:
+                                pass
+
+                            formatted, primary_link = format_account_bundle(
+                                proto, domain, uname, acc_uuid, days_left, quota, iplimit, "-", exp_iso
+                            )
                             accounts.append({
                                 "protocol": proto,
-                                "username": parts[1],
-                                "expired": parts[2]
+                                "username": uname,
+                                "expired": exp_iso,
+                                "online": uname in xray_online,
+                                "formatted_text": formatted,
+                                "primary_link": primary_link
                             })
         except Exception:
             pass
@@ -426,6 +569,93 @@ def delete_account(data):
 
     remove_xray_inbound(proto, user)
     return {"status": "success", "message": f"Akun {proto.upper()} {user} berhasil dihapus"}
+
+def purge_expired_accounts():
+    today = datetime.date.today()
+    removed_ssh = 0
+    removed_xray = 0
+
+    # 1. SSH Expired
+    try:
+        with open("/etc/passwd", "r", encoding="utf-8") as f:
+            passwd_lines = f.readlines()
+        for line in passwd_lines:
+            parts = line.strip().split(":")
+            if len(parts) >= 3 and parts[0] != "nobody" and int(parts[2]) >= 1000:
+                uname = parts[0]
+                try:
+                    out = subprocess.check_output(["chage", "-l", uname], stderr=subprocess.DEVNULL).decode("utf-8", errors="ignore")
+                    for l in out.splitlines():
+                        if "Account expires" in l:
+                            val = l.split(":", 1)[1].strip()
+                            if val.lower() != "never":
+                                exp_d = datetime.datetime.strptime(val, "%b %d, %Y").date()
+                                if exp_d < today:
+                                    subprocess.run(["userdel", "-f", uname], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                    lim_f = f"/etc/xray/ssh/{uname}"
+                                    if os.path.exists(lim_f):
+                                        os.remove(lim_f)
+                                    removed_ssh += 1
+                            break
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    # 2. Xray Expired
+    expired_users_by_proto = {"vmess": set(), "vless": set(), "trojan": set()}
+    db_map = [
+        ("vmess", "/etc/vmess/.vmess.db", "/etc/vmess"),
+        ("vless", "/etc/vless/.vless.db", "/etc/vless"),
+        ("trojan", "/etc/trojan/.trojan.db", "/etc/trojan")
+    ]
+    for proto, db_path, q_dir in db_map:
+        if not os.path.exists(db_path):
+            continue
+        with open(db_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        kept = []
+        for l in lines:
+            if l.startswith("### "):
+                parts = l.strip().split()
+                if len(parts) >= 3:
+                    uname = parts[1]
+                    try:
+                        exp_d = datetime.datetime.strptime(parts[2], "%Y-%m-%d").date()
+                        if exp_d < today:
+                            expired_users_by_proto[proto].add(uname)
+                            qf = os.path.join(q_dir, uname)
+                            if os.path.exists(qf):
+                                os.remove(qf)
+                            removed_xray += 1
+                            continue
+                    except Exception:
+                        pass
+            kept.append(l)
+        if expired_users_by_proto[proto]:
+            with open(db_path, "w", encoding="utf-8") as f:
+                f.writelines(kept)
+
+    cfg_path = "/etc/xray/config.json"
+    if removed_xray > 0 and os.path.exists(cfg_path):
+        cfg = load_xray_json(cfg_path)
+        for inb in cfg.get("inbounds", []):
+            tag = str(inb.get("tag", "")).lower()
+            proto = str(inb.get("protocol", "")).lower()
+            for p_key, exp_set in expired_users_by_proto.items():
+                if exp_set and (p_key in tag or proto == p_key):
+                    clients = inb.get("settings", {}).get("clients", [])
+                    inb["settings"]["clients"] = [c for c in clients if c.get("email") not in exp_set]
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+        subprocess.run(["systemctl", "restart", "xray"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    total = removed_ssh + removed_xray
+    return {
+        "status": "success",
+        "removed_total": total,
+        "message": f"Pembersihan selesai: {total} akun expired dihapus (SSH: {removed_ssh}, Xray: {removed_xray})"
+    }
 
 def renew_account(data):
     proto = str(data.get("protocol", "")).lower().strip()
@@ -624,6 +854,19 @@ class AgentHandler(BaseHTTPRequestHandler):
                 self._send_json(200 if res.get("status") == "success" else 400, res)
             except Exception as e:
                 self._send_json(400, {"status": "error", "message": str(e)})
+        elif self.path == "/api/purge-expired":
+            try:
+                res = purge_expired_accounts()
+                self._send_json(200, res)
+            except Exception as e:
+                self._send_json(500, {"status": "error", "message": str(e)})
+        elif self.path == "/api/restart-services":
+            subprocess.Popen(
+                ["sh", "-c", "systemctl restart xray haproxy nginx ws dropbear 2>/dev/null"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            self._send_json(200, {"status": "success", "message": "Layanan Xray, HAProxy, Nginx, WS & Dropbear sedang di-restart!"})
         elif self.path == "/api/reboot":
             self._send_json(200, {"status": "success", "message": "Perintah reboot dikirim! VPS akan restart dalam 2 detik."})
             subprocess.Popen(["sh", "-c", "sleep 2 && reboot"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
